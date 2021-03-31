@@ -42,8 +42,8 @@ class AttentionQKV(nn.Module):
         key_num_dims = len(key_size_list)
         similarity =  th.matmul(queries, keys.transpose((key_num_dims - 2), (key_num_dims - 1))) / th.sqrt(key_dim)# Compute the similarity according to the QKV formula
         masked_similarity = self.apply_mask(similarity, mask=mask) # We give you the mask to apply so that it is correct, you do not need to modify this.
-        print(masked_similarity.shape)
-        softmax_op = th.nn.Softmax(dim = key_num_dims - 1)
+        #print(masked_similarity.shape)
+        softmax_op = th.nn.Softmax(dim = -1)
         weights =  softmax_op(masked_similarity)# Turn the similarity into a normalized output. Remember that the last dim contains the features
         output =  th.matmul(weights, values)# Obtain the output
         ####################################  END OF YOUR CODE  ##################################
@@ -103,14 +103,14 @@ class MultiHeadProjection(nn.Module):
 
         batch_size, tensorlen = tensor.shape[0], tensor.shape[1]
         feature_size = tensor.shape[2]
-        print("initial shape", tensor.shape)
+        #print("initial shape", tensor.shape)
 
         new_feature_size =  feature_size // self.n_heads
         # Reshape this projection tensor so that it has n_heads, each of new_feature_size
-        tensor = tensor.reshape((batch_size, self.n_heads, -1, new_feature_size))
+        tensor = tensor.reshape((batch_size, -1, self.n_heads, new_feature_size))
         # Transpose the matrix so the outer-dimensions are the batch-size and the number of heads
-        #tensor = tensor.transpose(1, 3)
-        print("after split", tensor.shape)
+        tensor = tensor.transpose(1, 2)
+        #print("after split", tensor.shape)
         return tensor
         ##########################################################################################
 
@@ -122,14 +122,14 @@ class MultiHeadProjection(nn.Module):
 
         # Transpose back compared to the split, so that the outer dimensions are batch_size and sequence_length again
         # shape [batch_size, heads, n_queries, depth_v]
-        print("before combine", tensor.shape)
-        tensor = tensor
+        #print("before combine", tensor.shape)
+        tensor = tensor.transpose(1, 2)
         batch_size, tensorlen = tensor.shape[0], tensor.shape[1]
         feature_size = tensor.shape[-1]
 
         new_feature_size =  feature_size * self.n_heads# What is the new feature size, if we combine all the heads
         tensor =  tensor.reshape((batch_size, -1, new_feature_size))# Reshape the Tensor to remove the heads dimension and come back to a Rank-3 tensor
-        print("after combined ", tensor.shape)
+        #print("after combined ", tensor.shape)
         return tensor
         ##########################################################################################
 

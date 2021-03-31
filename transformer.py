@@ -89,7 +89,7 @@ class TransformerFeedForward(nn.Module):
         dense_drop =  self.dropout(dense_out)# Add the dropout here
         return  dense_out + inputs# Add the residual here
         ####################################  END OF YOUR CODE  ##################################
-'''
+
 
 class TransformerEncoderBlock(nn.Module):
     """An encoding block from the paper Attention Is All You Need (https://arxiv.org/pdf/1706.03762.pdf).
@@ -117,16 +117,16 @@ class TransformerEncoderBlock(nn.Module):
         # Perform a multi-headed self-attention across the inputs.
 
         # First normalize the input with the LayerNorm initialized in the __init__ function (self.norm)
-        norm_inputs = ""
+        norm_inputs = self.norm(inputs)
 
         # Apply the self-attention with the normalized input, use the self_attention mask as the optional mask parameter.
-        attn = ""
+        attn = self.self_attention((norm_inputs, norm_inputs), mask = self_attention_mask)
 
         # Apply the residual connection. res_attn should sum the attention output and the original, non-normalized inputs
-        res_attn = "" # Residual connection of the attention block
+        res_attn = attn + inputs # Residual connection of the attention block
 
         # output passes through a feed_forward network
-        output = ""
+        output = self.feed_forward(res_attn)
         return output
 
 
@@ -166,10 +166,10 @@ class TransformerDecoderBlock(nn.Module):
         # mask to control for the future outputs.
         # This generates a tensor of size [batch_size x target_len x d_model]
 
-        norm_decoder_inputs = ""
+        norm_decoder_inputs = self.self_norm(decoder_inputs)
 
-        target_selfattn = ""
-        res_target_self_attn = ""
+        target_selfattn = self.self_attention((norm_decoder_inputs, norm_decoder_inputs), mask = self_attention_mask)
+        res_target_self_attn = decoder_inputs + target_selfattn
 
         # Compute the attention using the keys/values from the encoder, and the query from the
         # decoder. This takes the encoder output of size [batch_size x source_len x d_model] and the
@@ -177,13 +177,13 @@ class TransformerDecoderBlock(nn.Module):
         # a multi-headed attention across them, giving an output of [batch_size x target_len x d_model]
         # using the encoder as the keys and values and the target as the queries
 
-        norm_target_selfattn = ""
-        norm_encoder_outputs = ""
-        encdec_attention = ""
+        norm_target_selfattn = self.cross_norm_target(res_target_self_attn)
+        norm_encoder_outputs = self.cross_norm_source(encoder_outputs)
+        encdec_attention = self.cross_attention((norm_target_selfattn, norm_encoder_outputs), mask = cross_attention_mask)
         # Take the residual between the output and the unnormalized target input of the cross-attention
-        res_encdec_attention = ""
+        res_encdec_attention = res_target_self_attn + encdec_attention
 
-        output = ""
+        output = self.feed_forward(res_encdec_attention)
 
         return output
 
@@ -424,7 +424,7 @@ class Transformer(nn.Module):
         # PART 5: Implement the full Transformer block
 
         # Using the self.encoder, encode the source_sequence, and provide the encoder_mask variable as the optional mask.
-        encoder_output = 
+        encoder_output = self.encoder.forward(source_sequence, encoder_mask)
 
         # Finally, we need to do a decoding this should generate a
         # tensor of shape [batch_size x target_length x d_model]
@@ -433,6 +433,6 @@ class Transformer(nn.Module):
         # As usual, provide it with the encoder and decoder_masks
         # Finally, You should also pass it these two optional arguments:
         # shift_target_sequence_right=shift_target_sequence_right, mask_future=mask_future
-        decoder_output = 
+        decoder_output = self.decoder.forward(target_sequence, encoder_output, encoder_mask, decoder_mask, mask_future=mask_future, shift_target_sequence_right=shift_target_sequence_right)
 
-        return decoder_output # We return the decoder's output'''
+        return decoder_output # We return the decoder's output
