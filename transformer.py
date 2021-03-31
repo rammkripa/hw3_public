@@ -50,16 +50,16 @@ class PositionEmbedding(nn.Module):
 
         # create the position embedding as described in the paper
         # use the `divisor` attribute instantiated in __init__ 
-        sin_embedding = 
-        cos_embedding = 
+        sin_embedding = th.sin(index / self.divisor)
+        cos_embedding = th.cos(index / self.divisor)
 
         # interleave the sin and cos. For more info see:
         # https://discuss.pytorch.org/t/how-to-interleave-two-tensors-along-certain-dimension/11332/3
-        position_shape = (1, , ) # fill in the other two dimensions
+        position_shape = (1, sequence_length, self.hidden_size) # fill in the other two dimensions
         position_embedding = th.stack((sin_embedding,cos_embedding), dim=3).view(position_shape)
 
         pos_embed_deviced = position_embedding.to(get_device())
-        return  # add the embedding to the input
+        return  inputs + position_embedding # add the embedding to the input
         ####################################  END OF YOUR CODE  ##################################
 
 class TransformerFeedForward(nn.Module):
@@ -84,12 +84,12 @@ class TransformerFeedForward(nn.Module):
         ####################################  YOUR CODE HERE  ####################################
         # PART 4.1: Implement the FeedForward Layer.
         # As seen in fig1, the feedforward layer includes a normalization and residual
-        norm_input = 
-        dense_out = 
-        dense_drop =  # Add the dropout here
-        return  # Add the residual here
+        norm_input = self.norm(inputs)
+        dense_out = self.feed_forward(norm_input)
+        dense_drop =  self.dropout(dense_out)# Add the dropout here
+        return  dense_out + inputs# Add the residual here
         ####################################  END OF YOUR CODE  ##################################
-
+'''
 
 class TransformerEncoderBlock(nn.Module):
     """An encoding block from the paper Attention Is All You Need (https://arxiv.org/pdf/1706.03762.pdf).
@@ -117,16 +117,16 @@ class TransformerEncoderBlock(nn.Module):
         # Perform a multi-headed self-attention across the inputs.
 
         # First normalize the input with the LayerNorm initialized in the __init__ function (self.norm)
-        norm_inputs = 
+        norm_inputs = ""
 
         # Apply the self-attention with the normalized input, use the self_attention mask as the optional mask parameter.
-        attn = 
+        attn = ""
 
         # Apply the residual connection. res_attn should sum the attention output and the original, non-normalized inputs
-        res_attn =  # Residual connection of the attention block
+        res_attn = "" # Residual connection of the attention block
 
         # output passes through a feed_forward network
-        output = 
+        output = ""
         return output
 
 
@@ -166,10 +166,10 @@ class TransformerDecoderBlock(nn.Module):
         # mask to control for the future outputs.
         # This generates a tensor of size [batch_size x target_len x d_model]
 
-        norm_decoder_inputs = 
+        norm_decoder_inputs = ""
 
-        target_selfattn = 
-        res_target_self_attn = 
+        target_selfattn = ""
+        res_target_self_attn = ""
 
         # Compute the attention using the keys/values from the encoder, and the query from the
         # decoder. This takes the encoder output of size [batch_size x source_len x d_model] and the
@@ -177,13 +177,13 @@ class TransformerDecoderBlock(nn.Module):
         # a multi-headed attention across them, giving an output of [batch_size x target_len x d_model]
         # using the encoder as the keys and values and the target as the queries
 
-        norm_target_selfattn = 
-        norm_encoder_outputs = 
-        encdec_attention = 
+        norm_target_selfattn = ""
+        norm_encoder_outputs = ""
+        encdec_attention = ""
         # Take the residual between the output and the unnormalized target input of the cross-attention
-        res_encdec_attention = 
+        res_encdec_attention = ""
 
-        output = 
+        output = ""
 
         return output
 
@@ -435,4 +435,4 @@ class Transformer(nn.Module):
         # shift_target_sequence_right=shift_target_sequence_right, mask_future=mask_future
         decoder_output = 
 
-        return decoder_output # We return the decoder's output
+        return decoder_output # We return the decoder's output'''
