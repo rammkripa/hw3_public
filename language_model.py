@@ -25,7 +25,9 @@ class LanguageModel(nn.Module):
         
     def forward(self,x):
         embeds = self.embedding(x)
-        lstm_out, _ = self.lstm(embeds.view(len(x), 1, -1))
+        if (len(list(embeds.size())) == 2) :
+            embeds = embeds.view(len(x), 1, -1)
+        lstm_out, _ = self.lstm(embeds) #embeds.view(len(x), 1, -1)
         lstm_drop = self.dropout(lstm_out)
 #         logits = your_code
         linear_output = self.output(lstm_drop)#lstm_out.view(len(x), -1))
